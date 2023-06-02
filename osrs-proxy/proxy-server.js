@@ -40,6 +40,31 @@ axios.get(OSRS_GE_BASE_URL)
     console.error("Error fetching data:", error);
   });
 
+app.get("/api/items", async (req, res) => {
+  try {
+    const data = await fs.promises.readFile("./items.json", "utf-8");
+    res.json(JSON.parse(data));
+  } catch (error) {
+    res.status(500).send(`Error reading item data: ${error.message}`);
+  }
+});
+
+app.get("/api/items/:itemId", async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const response = await axios.get(`https://prices.runescape.wiki/api/v1/osrs/latest?id=${itemId}`);
+    
+    if (response.status !== 200) {
+      res.status(response.status).send(`Error fetching item data: ${response.statusText}`);
+      return;
+    }
+
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).send(`Error fetching item data: ${error.message}`);
+  }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`OSRS proxy server is running on port ${PORT}`);
