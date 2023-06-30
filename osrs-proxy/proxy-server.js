@@ -13,6 +13,8 @@ const OSRS_BASE_URL =
 
 const OSRS_GE_BASE_URL = "https://prices.runescape.wiki/api/v1/osrs/mapping";
 
+
+
 app.get("/api/playerStats/:playerName", async (req, res) => {
   try {
     const { playerName } = req.params;
@@ -65,7 +67,84 @@ app.get("/api/items/:itemId", async (req, res) => {
   }
 });
 
+app.get("/api/item/:itemName", async (req, res) => {
+  console.log(req)
+  try {
+    const { itemName } = req.params;
+    console.log(itemName)
+    const data = await fs.promises.readFile("./items.json", "utf-8");
+    console.log("1");
+    const parsedData=JSON.parse(data);
+    const item = parsedData.find((item) => item.name === itemName);
+    console.log(item);
+    if (item) {
+
+      const highLow = await axios.get(`https://prices.runescape.wiki/api/v1/osrs/latest?id=${item.id}`);
+      const timeSeries = await axios.get(`https://prices.runescape.wiki/api/v1/osrs/timeseries?timestep=24h&id=${item.id}`);
+
+      if (highLow.status !== 200 || timeSeries.status !== 200) {
+        res.status(500).send(`Error 1: ${highLow.statusText || timeSeries.statusText}`);
+        return;
+      } console.log(" \n\n", {timeSeries});
+      const response={highLow:highLow.data.data[item.id], timeSeries:timeSeries.data.data};
+
+      res.json(response);
+    } else {
+      res.status(204).send(`Item not found: ${error.message}`);
+    }
+    
+  } catch (error)  {
+    console.log(error);
+    res.status(500).send(`Error 2: ${error.message}`);
+  }
+});
+
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`OSRS proxy server is running on port ${PORT}`);
 });
+
+
+const triumphs = {
+  "triumph1":{name: "Renegade Raider", description:"Achieve 50 KC in all 3 raids (CoX, ToB, ToA)", icon:"olm.png"},
+  "triumph2":{name:"Midgame Milestone" , decscription:"Achieve a total level of 1750" , icon:"olm.png"},
+  "triumph3":{name:"Big Damage", description:"Achieve level 99 in both the Attack and Strength skills", icon:"/images/BigDamage.png"},
+}
+
+const users={
+  "user1":{username:"Wuglington", triumphs: ["triumph3"]},
+  "user2":{username:"CalvTheGreat", triumphs:[]}
+};
+
+
+app.get('/users/:username/triumphs', (req, res)=>{
+  const {username} = req.params;
+  const user=users[username];
+  if (user){
+      const userTriumphs=user.triumphs.map(triumphId=>triumphs[triumphId]);
+      res.json(userTriumphs);
+      console.log(userTriumphs)
+  } else {
+      res.status(404).send('User not found.');
+  }
+});
+
+
+app.post('/users/:username/triumphs', (req, res)=>{
+  const username=req.params.username;
+  const triumphId=req.body.triumphId;
+  const user=users[username];
+  if (user && triumphs[triumphId]){
+      user.triumphs.push(triumphId);
+      res.send('Triumph added.');
+
+  } else {
+      res.status(404).send("Invalid username or Triumph Id")
+  }
+});
+
+// app.listen(3001, () => console.log('Server listeninig on port 3001'));
+
+
+
