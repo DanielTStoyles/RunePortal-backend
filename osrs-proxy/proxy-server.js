@@ -109,18 +109,21 @@ app.listen(PORT, () => {
 const triumphs = {
   "triumph1":{name: "Renegade Raider", description:"Achieve 50 KC in all 3 raids (CoX, ToB, ToA)", icon:"olm.png"},
   "triumph2":{name:"Midgame Milestone" , decscription:"Achieve a total level of 1750" , icon:"olm.png"},
-  "triumph3":{name:"Big Damage", description:"Achieve level 99 in both the Attack and Strength skills", icon:"/images/BigDamage.png"},
+  "triumph3":{name:"Big Damage", description:"Achieve level 99 in both the Attack and Strength skills", icon:"../images/olm.png"},
 }
 
-const users={
-  "user1":{username:"Wuglington", triumphs: ["triumph3"]},
-  "user2":{username:"CalvTheGreat", triumphs:[]}
-};
+
+const users=[
+{username:"Wuglington", triumphs:["triumph3"],},
+{username:"CalvTheGreat", triumphs:["triumph2"],},
+{username:"Wugz", triumphs:["triumph1"]}
+];
+
 
 
 app.get('/users/:username/triumphs', (req, res)=>{
   const {username} = req.params;
-  const user=users[username];
+  const user = users.find(item => item.username === username);
   if (user){
       const userTriumphs=user.triumphs.map(triumphId=>triumphs[triumphId]);
       res.json(userTriumphs);
@@ -145,6 +148,5 @@ app.post('/users/:username/triumphs', (req, res)=>{
 });
 
 // app.listen(3001, () => console.log('Server listeninig on port 3001'));
-
 
 
