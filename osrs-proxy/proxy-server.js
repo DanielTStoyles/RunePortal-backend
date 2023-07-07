@@ -4,9 +4,14 @@ import express from "express";
 import axios from "axios";
 import cors from "cors";
 import fs from "fs";
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 const app = express();
+
 app.use(cors());
+
+const currentDir = dirname(fileURLToPath(import.meta.url));
 
 const OSRS_BASE_URL =
   "https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws";
@@ -109,7 +114,7 @@ app.listen(PORT, () => {
 const triumphs = {
   "triumph1":{name: "Renegade Raider", description:"Achieve 50 KC in all 3 raids (CoX, ToB, ToA)", icon:"olm.png"},
   "triumph2":{name:"Midgame Milestone" , decscription:"Achieve a total level of 1750" , icon:"olm.png"},
-  "triumph3":{name:"Big Damage", description:"Achieve level 99 in both the Attack and Strength skills", icon:"../images/olm.png"},
+  "triumph3":{name:"Big Damage", description:"Achieve level 99 in both the Attack and Strength skills", icon:"./images/olm.png"},
 }
 
 
@@ -147,6 +152,5 @@ app.post('/users/:username/triumphs', (req, res)=>{
   }
 });
 
-// app.listen(3001, () => console.log('Server listeninig on port 3001'));
 
-
+app.use('/images', express.static(join(currentDir, 'images')));
